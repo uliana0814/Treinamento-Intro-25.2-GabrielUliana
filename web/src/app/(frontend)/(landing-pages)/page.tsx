@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+useClient';
+import React, { use, useState } from 'react';
 import ProductCard from '@/components/ui/ProductCard';
 import './assets/css/globals.css';
 
