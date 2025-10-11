@@ -10,7 +10,7 @@
     "test:complete": "vitest run && playwright test",
     "test:watch": "vitest watch",
     "coverage": "vitest run --coverage",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate"
