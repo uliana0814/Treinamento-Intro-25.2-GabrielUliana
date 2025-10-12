@@ -1,11 +1,13 @@
-import { ShoppingCart } from "lucide-react";
-import { CircleUserRound } from "lucide-react";
+import { ShoppingCart, CircleUserRound } from "lucide-react";
 
 interface NaviBarProps {
   cartCount: number;
+  totalPrice: number;
 }
 
-export default function NaviBar({ cartCount }: NaviBarProps) {
+
+
+export default function NaviBar({ cartCount, totalPrice }: NaviBarProps) {
   return (
     <header>
       <nav className="flex h-30 w-full items-center justify-between bg-white px-10">
@@ -26,6 +28,9 @@ export default function NaviBar({ cartCount }: NaviBarProps) {
           <h4>
             Carrinho ({cartCount})
           </h4>
+          <h4 className="font-bold">
+              {totalPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </h4>
         </div>
       </nav>
 

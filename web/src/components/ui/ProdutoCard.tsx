@@ -1,12 +1,13 @@
 interface ProductCardProps {
   product: {
+    id: number;
     name: string;
     image: string;
     description: string;
-    price: string;
+    price: number;
   };
   onAddToCart: () => void;
-  onRemoveFromCart: () => void;
+  onRemoveFromCart: (productId: number) => void;
 }
 
 function ProdutoCard({ product, onAddToCart, onRemoveFromCart }: ProductCardProps) {
@@ -27,7 +28,7 @@ function ProdutoCard({ product, onAddToCart, onRemoveFromCart }: ProductCardProp
       </h3>
       
       <p className="text-xl font-bold">
-        {product.price}
+        R${product.price.toFixed(2)}
       </p>
       
       <div className="mt-auto flex flex-col gap-2 pt-2">
