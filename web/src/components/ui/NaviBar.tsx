@@ -1,0 +1,37 @@
+import { ShoppingCart } from "lucide-react";
+import { CircleUserRound } from "lucide-react";
+
+interface NaviBarProps {
+  cartCount: number;
+}
+
+export default function NaviBar({ cartCount }: NaviBarProps) {
+  return (
+    <header>
+      <nav className="flex h-30 w-full items-center justify-between bg-white px-10">
+        <div className="flex items-center gap-4">
+          <img src="/imgs/logo.png" alt="Logo 027 store" className="h-24" />
+        </div>
+
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <h1 className="text-6xl font-sans font-bold text-blue-900">
+            027 STORE!
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-4 font-sans text-lg">
+          <CircleUserRound className="text-black h-8 w-8" />
+          <h4>Usuário</h4>
+          <ShoppingCart className="text-black h-8 w-8" />
+          <h4>
+            Carrinho ({cartCount})
+          </h4>
+        </div>
+      </nav>
+
+      <div className="p-5 text-center font-sans text-3xl font-bold">
+        <p> A melhor loja de produtos e experiências capixabas! </p>
+      </div>
+    </header>
+  );
+}

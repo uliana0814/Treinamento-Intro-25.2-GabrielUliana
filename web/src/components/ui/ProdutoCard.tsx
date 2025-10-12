@@ -11,12 +11,12 @@ interface ProductCardProps {
 
 function ProdutoCard({ product, onAddToCart, onRemoveFromCart }: ProductCardProps) {
   return (
-    <div className="flex flex-col w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-lg font-sans mx-auto">
+    <div className="flex flex-col w-full max-w-sm rounded-4xl bg-white p-6 text-center shadow-lg font-sans mx-auto">
     <img 
         src={product.image} 
         alt={product.name} 
         className="h-[300px] w-full rounded-lg object-cover mb-4"
-      />
+      />  
       
       <h2 className="mb-4 min-h-[50px] text-xl font-bold">
         {product.name}

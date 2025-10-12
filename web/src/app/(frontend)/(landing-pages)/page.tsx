@@ -1,6 +1,7 @@
 "use client"; 
 import React, { useState } from 'react';
 import ProdutoCard from '@/components/ui/ProdutoCard';
+import NaviBar from '@/components/ui/NaviBar';
 
 export default function HomePage() {
   const [cartCount, setCartCount] = useState(0);
@@ -18,7 +19,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-8 p-4 md:grid-cols-2 lg:grid-cols-3">
+    <>
+    <NaviBar cartCount={cartCount} />
+    <div className="grid grid-cols-1 gap-0 p-6 md:grid-cols-2 lg:grid-cols-3">
       <ProdutoCard 
          product={{
            name: "Quebradeira capixaba",
@@ -50,5 +53,6 @@ export default function HomePage() {
          onRemoveFromCart={handleRemoveFromCart}
        />
       </div>
+    </>
   );
 }
