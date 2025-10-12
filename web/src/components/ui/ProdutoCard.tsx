@@ -7,7 +7,7 @@ interface ProductCardProps {
     price: number;
   };
   onAddToCart: () => void;
-  onRemoveFromCart: (productId: number) => void;
+  onRemoveFromCart: () => void;
 }
 
 function ProdutoCard({ product, onAddToCart, onRemoveFromCart }: ProductCardProps) {

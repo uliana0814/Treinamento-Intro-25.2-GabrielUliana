@@ -3,11 +3,12 @@ import { ShoppingCart, CircleUserRound } from "lucide-react";
 interface NaviBarProps {
   cartCount: number;
   totalPrice: number;
+  onCartClick: () => void;
 }
 
 
 
-export default function NaviBar({ cartCount, totalPrice }: NaviBarProps) {
+export default function NaviBar({ cartCount, totalPrice, onCartClick }: NaviBarProps) {
   return (
     <header>
       <nav className="flex h-30 w-full items-center justify-between bg-white px-10">
@@ -21,7 +22,9 @@ export default function NaviBar({ cartCount, totalPrice }: NaviBarProps) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-4 font-sans text-lg">
+        <button
+        onClick={onCartClick}
+        className="flex items-center gap-4 font-sans text-lg cursor-pointer">
           <CircleUserRound className="text-black h-8 w-8" />
           <h4>Usuário</h4>
           <ShoppingCart className="text-black h-8 w-8" />
@@ -29,9 +32,9 @@ export default function NaviBar({ cartCount, totalPrice }: NaviBarProps) {
             Carrinho ({cartCount})
           </h4>
           <h4 className="font-bold">
-              {totalPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              {totalPrice.toFixed(2)}
             </h4>
-        </div>
+        </button>
       </nav>
 
       <div className="p-5 text-center font-sans text-3xl font-bold">
