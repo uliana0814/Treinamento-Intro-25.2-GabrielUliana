@@ -32,58 +32,6 @@ model User {
   @@map("user")
 }
 
-model Curso {
-  id        String @id @default(uuid()) @map("_id")
-  name      String
-  descricao String
-  slug      String @unique
-
-  materiasRelacionadas CursoMateriaRelacionada[]
-}
-
-model CursoMateriaRelacionada {
-  id String @id @default(uuid()) @map("_id")
-
-  curso   Curso  @relation(fields: [cursoId], references: [id])
-  cursoId String
-
-  materia   Materia @relation(fields: [materiaId], references: [id])
-  materiaId String
-
-  @@unique([cursoId, materiaId])
-}
-
-model Materia {
-  id                 String                    @id @default(uuid()) @map("_id")
-  name               String
-  descricao          String
-  cor                String
-  slug               String                    @unique
-  cursosRelacionados CursoMateriaRelacionada[]
-}
-
-model Licao {
-  id        String   @id @default(uuid()) @map("_id")
-  name      String
-  descricao String
-  archived  Boolean? @default(false)
-
-  conteudo     Conteudo[]
-}
-
-model Conteudo {
-  id       String   @id @default(uuid()) @map("_id")
-  name     String
-  type     String
-  markdown String
-  order    Int      @default(0)
-  archived Boolean? @default(false)
-
-  licao   Licao?  @relation(fields: [licaoId], references: [id])
-  licaoId String?
-}
-
-// evitar mexer daqui pra baixo:
 model Session {
   id        String   @id @map("_id")
   expiresAt DateTime
