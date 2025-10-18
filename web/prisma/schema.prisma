@@ -15,64 +15,41 @@ enum Role {
 }
 
 model User {
-  // nao mexer >
   id            String    @id @default(uuid()) @map("_id")
   name          String
   email         String    @unique
   emailVerified Boolean?
   image         String?
   role          Role      @default(USER)
-  // < nao mexer 
 
   createdAt  DateTime
   updatedAt  DateTime
   sessions   Session[]
   accounts   Account[]
+  compras    Compras[]
 
   @@map("user")
 }
 
-model Session {
-  id        String   @id @map("_id")
-  expiresAt DateTime
-  token     String
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
+model Compras {
+  id         String   @id @default(auto()) @map("_id")
+  precoTotal Float
+  user      User     @relation(fields: [userId], references: [id])
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([token])
-  @@map("session")
+  produtos  Produtos[]
 }
 
-model Account {
-  id                    String    @id @map("_id")
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
-
-  @@map("account")
+model Produtos {
+  id         String   @id @default(auto()) @map("_id")
+  nome       String
+  descricao  String
+  preco      Float
+  categorias Categoria[]
+  compras    Compras[]
 }
 
-model Verification {
-  id         String    @id @map("_id")
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
-
-  @@map("verification")
+model Categorias {
+  id        String     @id @default(auto()) @map("_id")
+  nome      String
+  produtos  Produtos[]
 }
