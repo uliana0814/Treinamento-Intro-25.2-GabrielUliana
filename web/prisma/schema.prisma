@@ -26,30 +26,93 @@ model User {
   updatedAt  DateTime
   sessions   Session[]
   accounts   Account[]
-  compras    Compras[]
+  compras    Compras[] // Relação com Compras
 
   @@map("user")
 }
 
-model Compras {
-  id         String   @id @default(auto()) @map("_id")
-  precoTotal Float
-  user      User     @relation(fields: [userId], references: [id])
+model Session {
+  id        String   @id @map("_id")
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
   userId    String
-  produtos  Produtos[]
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @map("_id")
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id @map("_id")
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
+model Compras {     //compra realizada por um user
+  id         String   @id @map("_id")
+  precoTotal Float
+  user      User     @relation(fields: [userId], references: [id])       //referencia ao user que fez a compra
+  userId    String
+  produtos  CompraProduto[]     //lista de produtos comprados, relação com o model intermediário CompraProduto
 }
 
 model Produtos {
-  id         String   @id @default(auto()) @map("_id")
+  id         String   @id @map("_id")
   nome       String
   descricao  String
   preco      Float
-  categorias Categoria[]
-  compras    Compras[]
+  categorias ProdutoCategoria[]    //lista de categorias que o produto pertence, relação com o model intermediário ProdutoCategoria
+  compras    CompraProduto[]       //lista de compras que incluem este produto, relação com o model intermediário CompraProduto
 }
 
 model Categorias {
-  id        String     @id @default(auto()) @map("_id")
+  id        String     @id @map("_id")
   nome      String
-  produtos  Produtos[]
+  produtos  ProdutoCategoria[]     //lista de produtos que pertencem a esta categoria, relação com o model intermediário ProdutoCategoria
+}
+
+model CompraProduto {             //model intermediário para representar a relação m:m entre Compras e Produtos
+  id         String    @id @map("_id")
+  compraId   String
+  produtoId  String
+  compra     Compras   @relation(fields: [compraId], references: [id])    //referencia à compra
+  produto    Produtos  @relation(fields: [produtoId], references: [id])   //referencia ao produto
+  quantidade Int       @default(1)
+  precoUnitario  Float
+}
+
+model ProdutoCategoria {         //model intermediário para representar a relação m:m entre Produtos e Categorias
+  id          String     @id @map("_id")
+  produtoId   String
+  categoriaId String
+  produto     Produtos   @relation(fields: [produtoId], references: [id])        //referencia ao produto  
+  categoria   Categorias @relation(fields: [categoriaId], references: [id])      //referencia à categoria
 }
