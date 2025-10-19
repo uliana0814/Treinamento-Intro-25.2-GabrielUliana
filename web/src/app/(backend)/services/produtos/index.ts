@@ -3,8 +3,7 @@ import { createProdutoSchema, updateProdutoSchema } from "../../schemas";
 import { z } from "zod";
 
 
-// --- CREATE ---
-export async function createProduto(data: z.infer<typeof createProdutoSchema>) {
+export async function createProduto(data: z.infer<typeof createProdutoSchema>) {      //cria um novo produto no banco de dados
   const validatedData = createProdutoSchema.parse(data);
   const { nome, descricao, preco, categoriaIds } = validatedData;
 
@@ -20,8 +19,7 @@ export async function createProduto(data: z.infer<typeof createProdutoSchema>) {
   });
 }
 
-// --- READ ---
-export async function getAllProdutos() {
+export async function getAllProdutos() {           //busca todos os produtos no banco de dados
   return await prisma.produtos.findMany({
     include: {
       categorias: true,
@@ -29,7 +27,7 @@ export async function getAllProdutos() {
   });
 }
 
-export async function findProdutoById(id: string) {
+export async function findProdutoById(id: string) {        //busca um produto específico pelo id
   return await prisma.produtos.findUnique({
     where: { id },
     include: {
@@ -38,8 +36,7 @@ export async function findProdutoById(id: string) {
   });
 }
 
-// --- UPDATE ---
-export async function updateProduto(id: string, data: z.infer<typeof updateProdutoSchema>) {
+export async function updateProduto(id: string, data: z.infer<typeof updateProdutoSchema>) {    //atualiza um produto específico pelo id
   const validatedData = updateProdutoSchema.parse(data);
   const { nome, descricao, preco, categoriaIds } = validatedData;
 
@@ -56,8 +53,7 @@ export async function updateProduto(id: string, data: z.infer<typeof updateProdu
   });
 }
 
-// --- DELETE ---
-export async function deleteProduto(id: string) {
+export async function deleteProduto(id: string) {    //deleta um produto específico pelo id
   return await prisma.produtos.delete({
     where: { id },
   });

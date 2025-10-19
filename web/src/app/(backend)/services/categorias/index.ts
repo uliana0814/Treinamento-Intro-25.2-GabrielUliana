@@ -3,27 +3,24 @@ import { categoriaSchema, updateCategoriaSchema } from "../../schemas";
 import { z } from "zod";
 
 
-// --- CREATE ---
-export async function createCategoria(data: z.infer<typeof categoriaSchema>) {
+export async function createCategoria(data: z.infer<typeof categoriaSchema>) {     //cria uma nova categoria no banco de dados
   const validatedData = categoriaSchema.parse(data);
   return await prisma.categorias.create({
     data: validatedData,
   });
 }
 
-// --- READ ---
-export async function getAllCategorias() {
+export async function getAllCategorias() {       //busca todas as categorias no banco de dados
   return await prisma.categorias.findMany();
 }
 
-export async function findCategoriaById(id: string) {
+export async function findCategoriaById(id: string) {   //busca uma categoria específica pelo id
   return await prisma.categorias.findUnique({
     where: { id },
   });
 }
 
-// --- UPDATE ---
-export async function updateCategoria(id: string, data: z.infer<typeof updateCategoriaSchema>) {
+export async function updateCategoria(id: string, data: z.infer<typeof updateCategoriaSchema>) {   //atualiza uma categoria específica pelo id
   const validatedData = updateCategoriaSchema.parse(data);
   return await prisma.categorias.update({
     where: { id },
@@ -31,8 +28,7 @@ export async function updateCategoria(id: string, data: z.infer<typeof updateCat
   });
 }
 
-// --- DELETE ---
-export async function deleteCategoria(id: string) {
+export async function deleteCategoria(id: string) {    //deleta uma categoria específica pelo id
   return await prisma.categorias.delete({
     where: { id },
   });

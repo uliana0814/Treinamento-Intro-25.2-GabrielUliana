@@ -4,28 +4,24 @@ import { z } from "zod";
 
 
 /**
- * Cria uma nova compra no banco de dados de forma segura.
- * @param data Contém os IDs dos produtos a serem comprados.
- * @param userId O ID do usuário autenticado que está fazendo a compra.
+ * @param data ids dos produtos a serem comprados
+ * @param userId id do usuário que tá fazendo a compra
  */
-export async function createCompra(data: z.infer<typeof createCompraSchema>, userId: string) {
+export async function createCompra(data: z.infer<typeof createCompraSchema>, userId: string) {  //cria uma nova compra no banco de dados
+
   const { produtoIds } = createCompraSchema.parse(data);
 
-  // Busca os preços reais dos produtos no banco para evitar manipulação.
   const produtosNoBanco = await prisma.produtos.findMany({
     where: { id: { in: produtoIds } },
   });
 
-  // Garante que todos os produtos solicitados existem.
-  if (produtosNoBanco.length !== produtoIds.length) {
+  if (produtosNoBanco.length !== produtoIds.length) {      //garante que todos os produtos solicitados existem
     throw new Error("Um ou mais produtos não foram encontrados.");
   }
 
-  // Calcula o preço total no backend para segurança.
-  const precoTotal = produtosNoBanco.reduce((total, produto) => total + produto.preco, 0);
+  const precoTotal = produtosNoBanco.reduce((total, produto) => total + produto.preco, 0);   //cálculo do preço total da compra
 
-  // Cria a compra no banco, associando ao usuário e aos produtos.
-  return await prisma.compras.create({
+  return await prisma.compras.create({        //cria a compra no banco e associa ao usuário e aos produtos
     data: {
       precoTotal,
       user: { connect: { id: userId } },
@@ -34,12 +30,10 @@ export async function createCompra(data: z.infer<typeof createCompraSchema>, use
   });
 }
 
-// --- READ ---
 /**
- * Busca todas as compras de um usuário específico.
  * @param userId O ID do usuário para buscar o histórico de compras.
  */
-export async function findComprasByUserId(userId: string) {
+export async function findComprasByUserId(userId: string) {   //busca as compras de um usuário específico
   return await prisma.compras.findMany({
     where: { userId },
     include: {
@@ -48,26 +42,20 @@ export async function findComprasByUserId(userId: string) {
   });
 }
 
-/**
- * Busca uma compra única pelo seu ID.
- */
-export async function findCompraById(id: string) {
+
+export async function findCompraById(id: string) {     //busca uma compra específica pelo id
     return await prisma.compras.findUnique({
         where: { id },
         include: {
             user: {
-                select: { id: true, name: true, email: true } // Evita expor dados sensíveis
+                select: { id: true, name: true, email: true }
             },
             produtos: true,
         },
     });
 }
 
-// --- DELETE ---
-/**
- * Deleta uma compra pelo seu ID.
- */
-export async function deleteCompra(id: string) {
+export async function deleteCompra(id: string) {     //deleta uma compra pelo id
   return await prisma.compras.delete({
     where: { id },
   });
