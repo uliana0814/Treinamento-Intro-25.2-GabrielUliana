@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import * as CompraService from '@/app/(backend)/services/compra.service';
+import * as CompraService from '@/backend/services/compras/index';
 import { PrismaClientKnownRequestError } from '@prisma/client';
 
 type RouteParams = {

@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -85,22 +84,23 @@ model Compras {     //compra realizada por um user
 }
 
 model Produtos {
-  id         String   @id @map("_id")
+  id         String    @id @default(uuid()) @map("_id")
   nome       String
   descricao  String
   preco      Float
+  imagem     String
   categorias ProdutoCategoria[]    //lista de categorias que o produto pertence, relação com o model intermediário ProdutoCategoria
   compras    CompraProduto[]       //lista de compras que incluem este produto, relação com o model intermediário CompraProduto
 }
 
 model Categorias {
-  id        String     @id @map("_id")
+  id        String     @id @default(uuid()) @map("_id")
   nome      String
   produtos  ProdutoCategoria[]     //lista de produtos que pertencem a esta categoria, relação com o model intermediário ProdutoCategoria
 }
 
 model CompraProduto {             //model intermediário para representar a relação m:m entre Compras e Produtos
-  id         String    @id @map("_id")
+  id         String    @id @default(uuid()) @map("_id")
   compraId   String
   produtoId  String
   compra     Compras   @relation(fields: [compraId], references: [id])    //referencia à compra
@@ -110,7 +110,7 @@ model CompraProduto {             //model intermediário para representar a rela
 }
 
 model ProdutoCategoria {         //model intermediário para representar a relação m:m entre Produtos e Categorias
-  id          String     @id @map("_id")
+  id          String     @id @default(uuid()) @map("_id")
   produtoId   String
   categoriaId String
   produto     Produtos   @relation(fields: [produtoId], references: [id])        //referencia ao produto  
