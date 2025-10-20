@@ -1,130 +1,124 @@
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
+  datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+  }
 
-enum Role {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
+  enum Role {
+    USER
+    ADMIN
+    SUPER_ADMIN
+  }
 
-model User {
-  // nao mexer >
-  id            String    @id @default(uuid()) @map("_id")
-  name          String
-  email         String    @unique
-  emailVerified Boolean?
-  image         String?
-  role          Role      @default(USER)
-  // < nao mexer 
+  model User {
+    id            String    @id @default(uuid()) @map("_id") 
+    name          String
+    email         String    @unique
+    emailVerified Boolean?
+    image         String?
+    role          Role      @default(USER)
 
-  createdAt  DateTime
-  updatedAt  DateTime
-  sessions   Session[]
-  accounts   Account[]
+    createdAt  DateTime
+    updatedAt  DateTime
+    sessions   Session[]
+    accounts   Account[]
+    compras    Compra[] //relação com Compras
 
-  @@map("user")
-}
+    @@map("user")
+  }
 
-model Curso {
-  id        String @id @default(uuid()) @map("_id")
-  name      String
-  descricao String
-  slug      String @unique
+  model Session {
+    id        String   @id @map("_id") @default(uuid()) 
+    expiresAt DateTime
+    token     String
+    createdAt DateTime
+    updatedAt DateTime
+    ipAddress String?
+    userAgent String?
+    userId    String   
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  materiasRelacionadas CursoMateriaRelacionada[]
-}
+    @@unique([token])
+    @@map("session")
+  }
 
-model CursoMateriaRelacionada {
-  id String @id @default(uuid()) @map("_id")
+  model Account {
+    id                    String     @id @default(auto()) @map("_id") @db.ObjectId
+    accountId             String
+    providerId            String
+    userId                String    
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime
+    updatedAt             DateTime
 
-  curso   Curso  @relation(fields: [cursoId], references: [id])
-  cursoId String
+    @@map("account")
+  }
 
-  materia   Materia @relation(fields: [materiaId], references: [id])
-  materiaId String
+  model Verification {
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime?
+    updatedAt  DateTime?
 
-  @@unique([cursoId, materiaId])
-}
+    @@map("verification")
+  }
 
-model Materia {
-  id                 String                    @id @default(uuid()) @map("_id")
-  name               String
-  descricao          String
-  cor                String
-  slug               String                    @unique
-  cursosRelacionados CursoMateriaRelacionada[]
-}
+  model Compra {     //compra realizada por um user
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    precoTotal Float
+    user      User     @relation(fields: [userId], references: [id])       //referencia ao user que fez a compra
+    userId    String   
+    produtos  CompraProduto[]     //lista de produtos comprados, relação com o model intermediário CompraProduto
 
-model Licao {
-  id        String   @id @default(uuid()) @map("_id")
-  name      String
-  descricao String
-  archived  Boolean? @default(false)
+    @@map("compra")
+  }
 
-  conteudo     Conteudo[]
-}
+  model Produto {
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId 
+    nome       String
+    descricao  String
+    preco      Float
+    imagem     String
+    categoria ProdutoCategoria[]    //lista de categorias que o produto pertence, relação com o model intermediário ProdutoCategoria
+    compras    CompraProduto[]       //lista de compras que incluem este produto, relação com o model intermediário CompraProduto
 
-model Conteudo {
-  id       String   @id @default(uuid()) @map("_id")
-  name     String
-  type     String
-  markdown String
-  order    Int      @default(0)
-  archived Boolean? @default(false)
+    @@map("produto")
+  }
 
-  licao   Licao?  @relation(fields: [licaoId], references: [id])
-  licaoId String?
-}
+  model Categoria {
+    id        String    @id @default(auto()) @map("_id") @db.ObjectId
+    nome      String
+    produtos  ProdutoCategoria[]     //lista de produtos que pertencem a esta categoria, relação com o model intermediário ProdutoCategoria
 
-// evitar mexer daqui pra baixo:
-model Session {
-  id        String   @id @map("_id")
-  expiresAt DateTime
-  token     String
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    @@map("categoria")
+  }
 
-  @@unique([token])
-  @@map("session")
-}
+  model CompraProduto {             //model intermediário para representar a relação m:m entre Compras e Produtos
+    id         String    @id @default(uuid()) @map("_id") 
+    compraId   String    @db.ObjectId
+    produtoId  String    @db.ObjectId
+    compra     Compra    @relation(fields: [compraId], references: [id])    //referencia à compra
+    produto    Produto   @relation(fields: [produtoId], references: [id])   //referencia ao produto
+    quantidade Int       @default(1)
+    precoUnitario  Float
+  }
 
-model Account {
-  id                    String    @id @map("_id")
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
-
-  @@map("account")
-}
-
-model Verification {
-  id         String    @id @map("_id")
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
-
-  @@map("verification")
-}
+  model ProdutoCategoria {         //model intermediário para representar a relação m:m entre Produtos e Categorias
+    id          String     @id @default(uuid()) @map("_id") 
+    produtoId   String     @db.ObjectId
+    categoriaId String     @db.ObjectId
+    produto     Produto    @relation(fields: [produtoId], references: [id], onDelete: Cascade)       //referencia ao produto  
+    categoria  Categoria  @relation(fields: [categoriaId], references: [id], onDelete: Cascade)     //referencia à categoria
+  }

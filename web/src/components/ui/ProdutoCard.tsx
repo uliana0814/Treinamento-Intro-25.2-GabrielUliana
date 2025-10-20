@@ -1,10 +1,10 @@
 interface ProductCardProps {
   product: {
     id: number;
-    name: string;
-    image: string;
-    description: string;
-    price: number;
+    nome: string;
+    imagem: string;
+    descricao: string;
+    preco: number;
   };
   onAddToCart: () => void;
   onRemoveFromCart: () => void;
@@ -14,21 +14,21 @@ function ProdutoCard({ product, onAddToCart, onRemoveFromCart }: ProductCardProp
   return (
     <div className="flex flex-col w-full max-w-sm rounded-4xl bg-white p-6 text-center shadow-lg font-sans mx-auto">
     <img 
-        src={product.image} 
-        alt={product.name} 
+        src={product.imagem} 
+        alt={product.nome} 
         className="h-[300px] w-full rounded-lg object-cover mb-4"
       />  
       
       <h2 className="mb-4 min-h-[50px] text-xl font-bold">
-        {product.name}
+        {product.nome}
       </h2>
       
       <h3 className="mb-4 text-lg font-normal flex-grow">
-        {product.description}
+        {product.descricao}
       </h3>
       
       <p className="text-xl font-bold">
-        R${product.price.toFixed(2)}
+        R${product.preco.toFixed(2)}
       </p>
       
       <div className="mt-auto flex flex-col gap-2 pt-2">
