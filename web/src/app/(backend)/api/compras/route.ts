@@ -1,36 +1,94 @@
-import { NextResponse } from 'next/server';
-import * as CompraService from '@/backend/services/compras/index';
-import { createCompraSchema } from '@/backend/schemas';
-import { ZodError } from 'zod';
+import prisma from "@/backend/services/db";
 
-export async function GET() {         //função para listar todas as compras
+/**
+ * Cria uma nova compra para um usuário com base nos IDs dos produtos.
+ * @param data - Dados contendo os IDs dos produtos.
+ * @param userId - ID do usuário que está realizando a compra.
+ */
+export async function criarCompra(data: { produtoIds: string[] }, userId: string) {
+  const { produtoIds } = data;
 
-  try {
-    const compras = await CompraService.getAllCompras();
-    return NextResponse.json(compras, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Erro ao buscar compras.' }, { status: 500 });
+  // Verifica se todos os produtos existem
+  const produtosEncontrados = await prisma.produtos.findMany({
+    where: {
+      id: {
+        in: produtoIds,
+      },
+    },
+  });
+
+  if (produtosEncontrados.length !== produtoIds.length) {
+    throw new Error("Um ou mais produtos não foram encontrados.");
   }
+
+  const precoTotal = produtosEncontrados.reduce(
+    (total, produto) => total + produto.preco,
+    0
+  );
+
+  // Criação da compra e associação com os produtos
+  const novaCompra = await prisma.compras.create({
+    data: {
+      userId,
+      precoTotal,
+      produtos: {
+        create: produtosEncontrados.map((produto) => ({
+          produto: {
+            connect: { id: produto.id },
+          },
+          precoUnitario: produto.preco,
+          quantidade: 1, // ou ajuste conforme necessário
+        })),
+      },
+    },
+  });
+
+  return novaCompra;
 }
 
-export async function POST(request: Request) {          //função para criar uma nova compra
-  try {
-    const userId = 'placeholder-do-id-do-usuario-logado';
-    if (!userId) {
-      return NextResponse.json({ message: 'Usuário não autenticado.' }, { status: 401 });
-    }
+/**
+ * Busca todas as compras feitas por um usuário específico.
+ * @param userId - ID do usuário.
+ */
+export async function buscarComprasPorUsuario(userId: string) {
+  return await prisma.compras.findMany({
+    where: { userId },
+    include: {
+      produtos: {
+        include: {
+          produto: true,
+        },
+      },
+    },
+  });
+}
 
-    const body = await request.json();
-    createCompraSchema.parse(body);
+/**
+ * Busca uma compra específica pelo ID.
+ * @param id - ID da compra.
+ */
+export async function buscarCompraPorId(id: string) {
+  return await prisma.compras.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true },
+      },
+      produtos: {
+        include: {
+          produto: true,
+        },
+      },
+    },
+  });
+}
 
-    const novaCompra = await CompraService.createCompra(body, userId);
-    return NextResponse.json(novaCompra, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(error.issues, { status: 400 });
-    }
-    console.error(error);
-    return NextResponse.json({ message: 'Erro ao criar compra.' }, { status: 500 });
-  }
+/**
+ * Remove uma compra do banco de dados.
+ * @param id - ID da compra.
+ */
+export async function removerCompra(id: string) {
+  return await prisma.compras.delete({
+    where: { id },
+  });
 }

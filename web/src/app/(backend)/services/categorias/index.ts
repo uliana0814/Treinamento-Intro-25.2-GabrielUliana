@@ -1,35 +1,64 @@
-import prisma from "@/backend/services/db";
-import { categoriaSchema, updateCategoriaSchema } from "../../schemas";
-import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 
-export async function createCategoria(data: z.infer<typeof categoriaSchema>) {     //cria uma nova categoria no banco de dados
-  const validatedData = categoriaSchema.parse(data);
-  return await prisma.categorias.create({
-    data: validatedData,
-  });
-}
+export const categoriaService = {
+  async listarTodas() {
+    try {
+      const listaCategorias = await prisma.categoria.findMany();
+      return listaCategorias;
+    } catch (err) {
+      console.error("Falha ao obter categorias:", err);
+      throw new Error("Erro ao buscar as categorias.");
+    }
+  },
 
-export async function getAllCategorias() {       //busca todas as categorias no banco de dados
-  return await prisma.categorias.findMany();
-}
+  async buscarPorId(categoriaId: string) {
+    try {
+      const categoriaEncontrada = await prisma.categoria.findUnique({
+        where: { id: categoriaId },
+      });
+      return categoriaEncontrada;
+    } catch (err) {
+      console.error(`Falha ao buscar categoria pelo ID ${categoriaId}:`, err);
+      throw new Error("Erro ao buscar a categoria.");
+    }
+  },
 
-export async function findCategoriaById(id: string) {   //busca uma categoria específica pelo id
-  return await prisma.categorias.findUnique({
-    where: { id },
-  });
-}
+  async criarCategoria(nomeCategoria: string) {
+    try {
+      const categoriaCriada = await prisma.categoria.create({
+        data: { nome: nomeCategoria },
+      });
+      return categoriaCriada;
+    } catch (err) {
+      console.error("Erro ao cadastrar nova categoria:", err);
+      throw new Error("Não foi possível criar a categoria.");
+    }
+  },
 
-export async function updateCategoria(id: string, data: z.infer<typeof updateCategoriaSchema>) {   //atualiza uma categoria específica pelo id
-  const validatedData = updateCategoriaSchema.parse(data);
-  return await prisma.categorias.update({
-    where: { id },
-    data: validatedData,
-  });
-}
+  async editarCategoria(categoriaId: string, novoNome: string) {
+    try {
+      const categoriaAtualizada = await prisma.categoria.update({
+        where: { id: categoriaId },
+        data: { nome: novoNome },
+      });
+      return categoriaAtualizada;
+    } catch (err) {
+      console.error(`Erro ao atualizar categoria ${categoriaId}:`, err);
+      throw new Error("Erro ao atualizar a categoria.");
+    }
+  },
 
-export async function deleteCategoria(id: string) {    //deleta uma categoria específica pelo id
-  return await prisma.categorias.delete({
-    where: { id },
-  });
-}
+  async removerCategoria(categoriaId: string) {
+    try {
+      await prisma.categoria.delete({
+        where: { id: categoriaId },
+      });
+      return { mensagem: "Categoria removida com sucesso." };
+    } catch (err) {
+      console.error(`Erro ao deletar categoria ${categoriaId}:`, err);
+      throw new Error("Não foi possível deletar a categoria.");
+    }
+  },
+};

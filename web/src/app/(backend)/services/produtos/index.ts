@@ -1,60 +1,68 @@
-import prisma from "@/backend/services/db";
-import { createProdutoSchema, updateProdutoSchema } from "../../schemas";
-import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
+const prisma = new PrismaClient();
 
-export async function createProduto(data: z.infer<typeof createProdutoSchema>) {      //cria um novo produto no banco de dados
-  const validatedData = createProdutoSchema.parse(data);
-  const { nome, descricao, preco, categoriaIds } = validatedData;
+type DadosProduto = Omit<Prisma.ProdutoUncheckedCreateInput, "id">;
 
-  return await prisma.produtos.create({
-    data: {
-      nome,
-      descricao,
-      preco,
-      categorias: {
-        connect: categoriaIds.map((id) => ({ id })),
-      },
-    },
-  });
-}
+export const servicoProduto = {
 
-export async function getAllProdutos() {           //busca todos os produtos no banco de dados
-  return await prisma.produtos.findMany({
-    include: {
-      categorias: true,
-    },
-  });
-}
+  async listarTodos() {
+    try {
+      const lista = await prisma.produto.findMany();
+      return lista;
+    } catch (erro) {
+      console.error("Falha ao listar os produtos:", erro);
+      throw new Error("Erro ao recuperar a lista de produtos.");
+    }
+  },
 
-export async function findProdutoById(id: string) {        //busca um produto específico pelo id
-  return await prisma.produtos.findUnique({
-    where: { id },
-    include: {
-      categorias: true,
-    },
-  });
-}
+  async buscarPorId(produtoId: string) {
+    try {
+      const resultado = await prisma.produto.findUnique({
+        where: { id: produtoId },
+      });
+      return resultado;
+    } catch (erro) {
+      console.error(`Erro ao encontrar produto com ID ${produtoId}:`, erro);
+      throw new Error("Erro ao buscar o produto.");
+    }
+  },
 
-export async function updateProduto(id: string, data: z.infer<typeof updateProdutoSchema>) {    //atualiza um produto específico pelo id
-  const validatedData = updateProdutoSchema.parse(data);
-  const { nome, descricao, preco, categoriaIds } = validatedData;
+  async cadastrar(dados: DadosProduto) {
+    try {
+      const criado = await prisma.produto.create({
+        data: dados,
+      });
+      return criado;
+    } catch (erro) {
+      console.error("Problema ao criar novo produto:", erro);
+      throw new Error("Falha ao registrar o produto.");
+    }
+  },
 
-  return await prisma.produtos.update({
-    where: { id },
-    data: {
-      nome,
-      descricao,
-      preco,
-      categorias: categoriaIds ? {
-        set: categoriaIds.map((id) => ({ id })),
-      } : undefined,
-    },
-  });
-}
+  async editar(produtoId: string, atualizacoes: Partial<DadosProduto>) {
+    try {
+      const atualizado = await prisma.produto.update({
+        where: { id: produtoId },
+        data: atualizacoes,
+      });
+      return atualizado;
+    } catch (erro) {
+      console.error(`Erro ao atualizar produto ${produtoId}:`, erro);
+      throw new Error("Não foi possível modificar o produto.");
+    }
+  },
 
-export async function deleteProduto(id: string) {    //deleta um produto específico pelo id
-  return await prisma.produtos.delete({
-    where: { id },
-  });
-}
+  async remover(produtoId: string) {
+    try {
+      await prisma.produto.delete({
+        where: { id: produtoId },
+      });
+      return { mensagem: "Produto removido com sucesso." };
+    } catch (erro) {
+      console.error(`Erro ao remover produto ${produtoId}:`, erro);
+      throw new Error("Erro ao deletar o produto.");
+    }
+  },
+};

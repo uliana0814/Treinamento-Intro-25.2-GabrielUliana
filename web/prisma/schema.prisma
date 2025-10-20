@@ -1,118 +1,124 @@
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
+  datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+  }
 
-enum Role {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
+  enum Role {
+    USER
+    ADMIN
+    SUPER_ADMIN
+  }
 
-model User {
-  id            String    @id @default(uuid()) @map("_id")
-  name          String
-  email         String    @unique
-  emailVerified Boolean?
-  image         String?
-  role          Role      @default(USER)
+  model User {
+    id            String    @id @default(uuid()) @map("_id") 
+    name          String
+    email         String    @unique
+    emailVerified Boolean?
+    image         String?
+    role          Role      @default(USER)
 
-  createdAt  DateTime
-  updatedAt  DateTime
-  sessions   Session[]
-  accounts   Account[]
-  compras    Compras[] // Relação com Compras
+    createdAt  DateTime
+    updatedAt  DateTime
+    sessions   Session[]
+    accounts   Account[]
+    compras    Compra[] //relação com Compras
 
-  @@map("user")
-}
+    @@map("user")
+  }
 
-model Session {
-  id        String   @id @map("_id")
-  expiresAt DateTime
-  token     String
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  model Session {
+    id        String   @id @map("_id") @default(uuid()) 
+    expiresAt DateTime
+    token     String
+    createdAt DateTime
+    updatedAt DateTime
+    ipAddress String?
+    userAgent String?
+    userId    String   
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
-  @@map("session")
-}
+    @@unique([token])
+    @@map("session")
+  }
 
-model Account {
-  id                    String    @id @map("_id")
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
+  model Account {
+    id                    String     @id @default(auto()) @map("_id") @db.ObjectId
+    accountId             String
+    providerId            String
+    userId                String    
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime
+    updatedAt             DateTime
 
-  @@map("account")
-}
+    @@map("account")
+  }
 
-model Verification {
-  id         String    @id @map("_id")
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  model Verification {
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime?
+    updatedAt  DateTime?
 
-  @@map("verification")
-}
+    @@map("verification")
+  }
 
-model Compras {     //compra realizada por um user
-  id         String   @id @map("_id")
-  precoTotal Float
-  user      User     @relation(fields: [userId], references: [id])       //referencia ao user que fez a compra
-  userId    String
-  produtos  CompraProduto[]     //lista de produtos comprados, relação com o model intermediário CompraProduto
-}
+  model Compra {     //compra realizada por um user
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    precoTotal Float
+    user      User     @relation(fields: [userId], references: [id])       //referencia ao user que fez a compra
+    userId    String   
+    produtos  CompraProduto[]     //lista de produtos comprados, relação com o model intermediário CompraProduto
 
-model Produtos {
-  id         String    @id @default(uuid()) @map("_id")
-  nome       String
-  descricao  String
-  preco      Float
-  imagem     String
-  categorias ProdutoCategoria[]    //lista de categorias que o produto pertence, relação com o model intermediário ProdutoCategoria
-  compras    CompraProduto[]       //lista de compras que incluem este produto, relação com o model intermediário CompraProduto
-}
+    @@map("compra")
+  }
 
-model Categorias {
-  id        String     @id @default(uuid()) @map("_id")
-  nome      String
-  produtos  ProdutoCategoria[]     //lista de produtos que pertencem a esta categoria, relação com o model intermediário ProdutoCategoria
-}
+  model Produto {
+    id         String    @id @default(auto()) @map("_id") @db.ObjectId 
+    nome       String
+    descricao  String
+    preco      Float
+    imagem     String
+    categoria ProdutoCategoria[]    //lista de categorias que o produto pertence, relação com o model intermediário ProdutoCategoria
+    compras    CompraProduto[]       //lista de compras que incluem este produto, relação com o model intermediário CompraProduto
 
-model CompraProduto {             //model intermediário para representar a relação m:m entre Compras e Produtos
-  id         String    @id @default(uuid()) @map("_id")
-  compraId   String
-  produtoId  String
-  compra     Compras   @relation(fields: [compraId], references: [id])    //referencia à compra
-  produto    Produtos  @relation(fields: [produtoId], references: [id])   //referencia ao produto
-  quantidade Int       @default(1)
-  precoUnitario  Float
-}
+    @@map("produto")
+  }
 
-model ProdutoCategoria {         //model intermediário para representar a relação m:m entre Produtos e Categorias
-  id          String     @id @default(uuid()) @map("_id")
-  produtoId   String
-  categoriaId String
-  produto     Produtos   @relation(fields: [produtoId], references: [id])        //referencia ao produto  
-  categoria   Categorias @relation(fields: [categoriaId], references: [id])      //referencia à categoria
-}
+  model Categoria {
+    id        String    @id @default(auto()) @map("_id") @db.ObjectId
+    nome      String
+    produtos  ProdutoCategoria[]     //lista de produtos que pertencem a esta categoria, relação com o model intermediário ProdutoCategoria
+
+    @@map("categoria")
+  }
+
+  model CompraProduto {             //model intermediário para representar a relação m:m entre Compras e Produtos
+    id         String    @id @default(uuid()) @map("_id") 
+    compraId   String    @db.ObjectId
+    produtoId  String    @db.ObjectId
+    compra     Compra    @relation(fields: [compraId], references: [id])    //referencia à compra
+    produto    Produto   @relation(fields: [produtoId], references: [id])   //referencia ao produto
+    quantidade Int       @default(1)
+    precoUnitario  Float
+  }
+
+  model ProdutoCategoria {         //model intermediário para representar a relação m:m entre Produtos e Categorias
+    id          String     @id @default(uuid()) @map("_id") 
+    produtoId   String     @db.ObjectId
+    categoriaId String     @db.ObjectId
+    produto     Produto    @relation(fields: [produtoId], references: [id], onDelete: Cascade)       //referencia ao produto  
+    categoria  Categoria  @relation(fields: [categoriaId], references: [id], onDelete: Cascade)     //referencia à categoria
+  }

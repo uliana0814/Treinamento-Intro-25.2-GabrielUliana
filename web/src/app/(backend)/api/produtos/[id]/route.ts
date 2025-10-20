@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import * as ProdutoService from '@/backend/services/produtos/index';
-import { updateProdutoSchema } from '@/backend/schemas';
-import { ZodError } from 'zod';
-import { PrismaClientKnownRequestError } from '@prisma/client';
+import { servicoProduto } from '@/backend/services/produtos';
+import { Prisma } from '@prisma/client';
 
 type RouteParams = {
   params: {
@@ -10,10 +8,11 @@ type RouteParams = {
   };
 };
 
-export async function GET(request: Request, { params }: RouteParams) {         //função para buscar um produto específico pelo id
+// Buscar um produto pelo ID
+export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
-    const produto = await ProdutoService.findProdutoById(id);
+    const produto = await servicoProduto.buscarPorId(id);
 
     if (!produto) {
       return NextResponse.json({ message: 'Produto não encontrado.' }, { status: 404 });
@@ -21,45 +20,53 @@ export async function GET(request: Request, { params }: RouteParams) {         /
 
     return NextResponse.json(produto, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar produto:', error);
     return NextResponse.json({ message: 'Erro ao buscar produto.' }, { status: 500 });
   }
 }
 
-export async function PATCH(request: Request, { params }: RouteParams) {       //função para atualizar um produto específico pelo id
+// Atualizar um produto pelo ID
+export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
     const body = await request.json();
 
-    updateProdutoSchema.parse(body);
-
-    const produtoAtualizado = await ProdutoService.updateProduto(id, body);
+    const produtoAtualizado = await servicoProduto.editar(id, body);
     return NextResponse.json(produtoAtualizado, { status: 200 });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(error.issues, { status: 400 });
-    }
-    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-      return NextResponse.json({ message: 'Produto não encontrado para atualização.' }, { status: 404 });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      return NextResponse.json(
+        { message: 'Produto não encontrado para atualização.' },
+        { status: 404 }
+      );
     }
 
-    console.error(error);
+    console.error('Erro ao atualizar produto:', error);
     return NextResponse.json({ message: 'Erro ao atualizar produto.' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, { params }: RouteParams) {       //função para deletar um produto específico pelo id
+// Deletar um produto pelo ID
+export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
-    await ProdutoService.deleteProduto(id);
-
+    await servicoProduto.remover(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
-      return NextResponse.json({ message: 'Produto não encontrado para exclusão.' }, { status: 404 });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      return NextResponse.json(
+        { message: 'Produto não encontrado para exclusão.' },
+        { status: 404 }
+      );
     }
 
-    console.error(error);
+    console.error('Erro ao deletar produto:', error);
     return NextResponse.json({ message: 'Erro ao deletar produto.' }, { status: 500 });
   }
 }

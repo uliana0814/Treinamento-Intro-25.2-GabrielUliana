@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import * as CategoriaService from '@/backend/services/categorias/index';
-import { updateCategoriaSchema } from '@/backend/schemas';
-import { ZodError } from 'zod';
+import { categoriaService } from '@/backend/services/categorias';
 import { Prisma } from '@prisma/client';
 
 type RouteParams = {
@@ -10,10 +8,10 @@ type RouteParams = {
   };
 };
 
-export async function GET(request: Request, { params }: RouteParams) {     //função para buscar uma categoria específica pelo id
+export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
-    const categoria = await CategoriaService.findCategoriaById(id);
+    const categoria = await categoriaService.buscarPorId(id);
 
     if (!categoria) {
       return NextResponse.json({ message: 'Categoria não encontrada.' }, { status: 404 });
@@ -26,19 +24,19 @@ export async function GET(request: Request, { params }: RouteParams) {     //fun
   }
 }
 
-export async function PATCH(request: Request, { params }: RouteParams) {       //função para atualizar uma categoria específica pelo id
+export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
     const body = await request.json();
 
-    updateCategoriaSchema.parse(body);
+    if (!body || typeof body.nome !== 'string' || body.nome.trim() === '') {
+      return NextResponse.json({ message: 'Nome inválido ou ausente.' }, { status: 400 });
+    }
 
-    const categoriaAtualizada = await CategoriaService.updateCategoria(id, body);
+    const categoriaAtualizada = await categoriaService.editarCategoria(id, body.nome.trim());
+
     return NextResponse.json(categoriaAtualizada, { status: 200 });
   } catch (error: unknown) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(error.issues, { status: 400 });
-    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       return NextResponse.json({ message: 'Categoria não encontrada para atualização.' }, { status: 404 });
     }
@@ -48,10 +46,10 @@ export async function PATCH(request: Request, { params }: RouteParams) {       /
   }
 }
 
-export async function DELETE(request: Request, { params }: RouteParams) {        //função para deletar uma categoria específica pelo id
+export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
-    await CategoriaService.deleteCategoria(id);
+    await categoriaService.removerCategoria(id);
 
     return new NextResponse(null, { status: 204 });
   } catch (error: unknown) {

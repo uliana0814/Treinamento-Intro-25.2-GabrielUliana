@@ -1,5 +1,3 @@
-// prisma/seed.ts
-
 import { PrismaClient } from '@prisma/client';
 
 // Instancia o Prisma Client
@@ -57,16 +55,16 @@ async function main() {
   // 1. Limpa os dados existentes para evitar duplicatas
   console.log('Limpando dados antigos...');
   await prisma.produtoCategoria.deleteMany({});
-  await prisma.produtos.deleteMany({});
-  await prisma.categorias.deleteMany({});
+  await prisma.produto.deleteMany({});
+  await prisma.categoria.deleteMany({});
 
   // 2. Cria as categorias e as armazena em um objeto para fácil acesso
   console.log('Criando categorias...');
   const categorias = {
-    "Comida": await prisma.categorias.create({ data: { nome: 'Comida' } }),
-    "Bebida": await prisma.categorias.create({ data: { nome: 'Bebida' } }),
-    "Calçados": await prisma.categorias.create({ data: { nome: 'Calçados' } }),
-    "Experiências": await prisma.categorias.create({ data: { nome: 'Experiências' } })
+    "Comida": await prisma.categoria.create({ data: { nome: 'Comida' } }),
+    "Bebida": await prisma.categoria.create({ data: { nome: 'Bebida' } }),
+    "Calçados": await prisma.categoria.create({ data: { nome: 'Calçados' } }),
+    "Experiências": await prisma.categoria.create({ data: { nome: 'Experiências' } })
   };
   console.log('Categorias criadas com sucesso!');
 
@@ -75,13 +73,13 @@ async function main() {
   for (const productData of productsToCreate) {
     const category = categorias[productData.categoryName as keyof typeof categorias];
 
-    await prisma.produtos.create({
+    await prisma.produto.create({
       data: {
         nome: productData.name,
         descricao: productData.description,
         preco: productData.price,
         imagem: productData.image,
-        categorias: {
+        categoria: {
           create: [
             {
              categoriaId: category.id,

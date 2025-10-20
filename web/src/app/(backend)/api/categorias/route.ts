@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import * as CategoriaService from '@/backend/services/categorias/index';
-import { categoriaSchema } from '@/backend/schemas';
-import { ZodError } from 'zod';
+import { categoriaService } from '@/backend/services/categorias';
 
-export async function GET() {         //função para listar todas as categorias
+export async function GET() {
   try {
-    const categorias = await CategoriaService.getAllCategorias();
+    const categorias = await categoriaService.listarTodas();
     return NextResponse.json(categorias, { status: 200 });
   } catch (error) {
     console.error(error);
@@ -13,17 +11,19 @@ export async function GET() {         //função para listar todas as categorias
   }
 }
 
-export async function POST(request: Request) {        //função para criar uma nova categoria
+export async function POST(request: Request) {
   try {
     const body = await request.json();
-    categoriaSchema.parse(body);
 
-    const novaCategoria = await CategoriaService.createCategoria(body);
+    // Validação simples manual
+    if (!body || typeof body.nome !== 'string' || body.nome.trim() === '') {
+      return NextResponse.json({ message: 'Nome inválido ou ausente.' }, { status: 400 });
+    }
+
+    const novaCategoria = await categoriaService.criarCategoria(body.nome.trim());
+
     return NextResponse.json(novaCategoria, { status: 201 });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(error.issues, { status: 400 });
-    }
     console.error(error);
     return NextResponse.json({ message: 'Erro ao criar categoria.' }, { status: 500 });
   }
