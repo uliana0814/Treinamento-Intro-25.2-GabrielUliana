@@ -57,7 +57,7 @@ function LoginForm() {
 
   return ( 
     <div className="lg:w-[90%] xl:w-[80%]">
-      <h2 className="font-bold text-[40px] text-center leading-12">Continue seu aprendizado</h2>
+      <h2 className="font-bold text-3xl md:text-[40px] text-center leading-tight md:leading-12">Bem vindo(a) à 027 Store!</h2>
       <form className="mt-6" onSubmit={handleSubmit}>
         
         <ValidatedInput 

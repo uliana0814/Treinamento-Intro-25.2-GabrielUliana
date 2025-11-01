@@ -84,7 +84,7 @@ export default function HomePage() {
     onCartClick={() => setIsCartOpen(true)}
     />
     {isCartOpen && (
-        <div className="absolute top-24 right-4 z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-xl border "> 
+        <div className="absolute top-24 left-4 right-4 z-50 rounded-lg bg-white p-6 shadow-xl border md:w-full md:max-w-md md:left-auto md:right-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Seu Carrinho</h2>
               <button onClick={() => setIsCartOpen(false)} className="text-gray-500 hover:text-gray-800 text-2xl cursor-pointer">&times;</button>
@@ -108,7 +108,7 @@ export default function HomePage() {
             </div>
           </div>
       )}
-    <div className="grid grid-cols-1 gap-10 p-20 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-10 p-4 md:p-10 lg:p-20 md:grid-cols-2 lg:grid-cols-3">
       {productsData.map(product => (
         <ProdutoCard
           key={product.id}

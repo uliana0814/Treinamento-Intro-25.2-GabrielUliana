@@ -1,7 +1,7 @@
 'use client'
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'; // 1. IMPORTADO
+import { useRouter } from 'next/navigation';
 import PasswordRequirement from "./PasswordRequirement";
 import RequiredTag from "@/components/input/RequiredTag";
 import { hasLowercase, hasMinLength, hasNumber, hasUppercase, validatePassword, validateConfirmPassword } from "@/utils";
@@ -54,21 +54,11 @@ function CadastroForm() {
   }, []);
 
   return ( 
-    <div className="flex items-center justify-center">
+    <div className="w-full">
       <div className="pt-6 mb-12 px-2">
-        <h2 className="font-bold text-[40px] text-center leading-12">Aprenda se divertindo!</h2>
-        <p className="text-gray-500 pt-1 mb-8">Lições, exercícios, simulações e muita interatividade customizados <b>da forma que você preferir</b></p>
-        
-
-        <div className="flex items-center gap-4 py-5">
-          <div className="flex-grow h-0.5 bg-gray-400" />
-          <p className="text-gray-400 text-lg">ou</p>
-          <div className="flex-grow h-0.5 bg-gray-400" />
-        </div>
+        <h2 className="font-bold text-3xl md:text-[40px] text-center leading-tight md:leading-12">Cadastre-se!</h2>
 
         <form className="" onSubmit={handleCredentialsSubmit}>
-          {/* ... Todo o seu formulário JSX (ValidatedInput, etc) ... */}
-          {/* NADA MUDOU AQUI DENTRO DO <form> */}
           
           <div className="flex flex-col gap-4">
             <ValidatedInput
