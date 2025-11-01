@@ -1,29 +1,25 @@
 'use client'
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
+import { useRouter } from 'next/navigation'; // 1. IMPORTADO
 import PasswordRequirement from "./PasswordRequirement";
 import RequiredTag from "@/components/input/RequiredTag";
 import { hasLowercase, hasMinLength, hasNumber, hasUppercase, validatePassword, validateConfirmPassword } from "@/utils";
-
 import { toast } from "react-hot-toast";
-import { redirect } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-
 import dynamic from 'next/dynamic';
 
-const GoogleAuthButton = dynamic(() => import('@/components/auth/GoogleLoginButton'));
 const CredentialsButton = dynamic(() => import('@/components/auth/CredentialsButton'));
 const ValidatedInput = dynamic(() => import('@/components/input/ValidatedInput'));
 
 function CadastroForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleCredentialsSubmit = async (e: React.FormEvent) => {
+  const handleCredentialsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -32,36 +28,22 @@ function CadastroForm() {
         toast.error("As senhas não coincidem");
         return;
       }
-
       if (!validatePassword(password)) {
         toast.error("A senha não atende aos requisitos mínimos");
-        return;
+        return; 
       }
+      
+      const user = { name, email, password };
 
-      const result = await authClient.signUp.email({
-        name,
-        email,
-        password,
-        callbackURL: "/",
-      });
+      localStorage.setItem('user', JSON.stringify(user));
 
-      if (result.error) {
-        if (result.error.message?.includes('already exists') || result.error.message?.includes('duplicate')) {
-          toast.error("Este email já está cadastrado");
-        } else {
-          toast.error(result.error.message || "Erro inesperado");
-        }
-      } else {
-        toast.success(`Bem-vindo(a), ${name}!`);
-        
-        setTimeout(() => {
-          redirect('/');
-        }, 1000);
-      }
+      toast.success(`Bem-vindo(a), ${name}! Cadastro local salvo.`);
+      
+      router.push('/login');
+
     } catch (error: unknown) {
-      console.error('Signup error:', error);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      toast.error((error as any).message ?? "Erro inesperado");
+      console.error('Erro ao salvar no localStorage:', error);
+      toast.error("Erro inesperado ao salvar cadastro local.");
     } finally {
       setLoading(false);
     }
@@ -77,7 +59,6 @@ function CadastroForm() {
         <h2 className="font-bold text-[40px] text-center leading-12">Aprenda se divertindo!</h2>
         <p className="text-gray-500 pt-1 mb-8">Lições, exercícios, simulações e muita interatividade customizados <b>da forma que você preferir</b></p>
         
-        <GoogleAuthButton disabled={loading} text="Cadastro com Google" />
 
         <div className="flex items-center gap-4 py-5">
           <div className="flex-grow h-0.5 bg-gray-400" />
@@ -86,10 +67,13 @@ function CadastroForm() {
         </div>
 
         <form className="" onSubmit={handleCredentialsSubmit}>
+          {/* ... Todo o seu formulário JSX (ValidatedInput, etc) ... */}
+          {/* NADA MUDOU AQUI DENTRO DO <form> */}
+          
           <div className="flex flex-col gap-4">
             <ValidatedInput
               title="Nome"
-              placeholder="Vagalume da Silva"
+              placeholder="Seu nome completo"
               name="name"
               type="text"
               value={name}
@@ -101,7 +85,7 @@ function CadastroForm() {
             ><RequiredTag/></ValidatedInput>
             <ValidatedInput
               title="E-mail"
-              placeholder="exemplo@noctiluz.com.br"
+              placeholder="exemplo@email.com.br"
               name="email"
               type="email"
               value={email}

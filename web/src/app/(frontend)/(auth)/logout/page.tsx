@@ -1,11 +1,21 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+"use client";
 
-export default async function LogoutPage() {
-  await auth.api.signOut({
-    headers: await headers()
-  });
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-  redirect('/');
+export default function LogoutPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    localStorage.removeItem('loggedInUser');
+    
+    router.push('/login'); 
+
+  }, [router]);
+
+  return (
+    <div>
+      <p>Saindo...</p>
+    </div>
+  );
 }
