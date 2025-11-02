@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ProdutoCard from '@/components/ui/ProdutoCard';
 import NaviBar from '@/components/ui/NaviBar';
+import { Search } from 'lucide-react'; 
 
 type Product = {
   id: number;
@@ -26,17 +27,19 @@ const productsData: Product [] = [
 
 
 export default function HomePage() {
-  
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") { return []; }
-    const storedCart = localStorage.getItem('027_cart_v2');
-    return storedCart ? JSON.parse(storedCart) : [];
-  });
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem('027_cart_v2');
+    if (storedCart) {
+      setCartItems(JSON.parse(storedCart));
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('027_cart_v2', JSON.stringify(cartItems));
@@ -93,7 +96,7 @@ export default function HomePage() {
   const totalItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const filteredProducts = productsData
-    .filter(product => // 1. Filtra por nome
+    .filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter(product => { 
@@ -167,44 +170,58 @@ export default function HomePage() {
         </div>
       )}
       
-      <div className="flex flex-col gap-4 px-4 md:px-10 lg:px-20 pt-4">
+      <div className="flex flex-col md:flex-row gap-4 px-4 md:px-10 lg:px-20 pt-4 md:items-end">
         
-        <input
-          type="text"
-          placeholder="Buscar produto por nome..."
-          className="w-full rounded-lg border border-gray-300 p-3 text-lg focus:border-black focus:outline-none bg-blue-50"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="relative w-full md:w-1/2">
+          <label className="block text-sm font-medium text-transparent">.</label>
+          <div className="relative"> 
+            <input
+              type="text"
+              placeholder="Buscar produto por nome..."
+              className="w-full rounded-lg border border-gray-300 bg-white p-3 pl-10 text-lg shadow-sm focus:border-blue-500 focus:outline-none"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          </div>
+        </div>
         
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          <div className="w-full md:w-1/2">
-            <label htmlFor="min-price" className="block text-sm font-medium text-gray-700">
-              Preço Mínimo
-            </label>
+        <div className="w-full md:w-1/4">
+          <label htmlFor="min-price" className="block text-sm font-medium text-gray-700">
+            Preço Mínimo
+          </label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              R$
+            </span>
             <input
               id="min-price"
               type="number"
-              placeholder="R$ 0,00"
+              placeholder="0,00"
               min={0}
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 p-3 mt-1 focus:border-black focus:outline-none bg-blue-50"
+              className="w-full rounded-lg border border-gray-300 bg-white p-3 pl-10 shadow-sm"
             />
           </div>
+        </div>
 
-          <div className="w-full md:w-1/2">
-            <label htmlFor="max-price" className="block text-sm font-medium text-gray-700">
-              Preço Máximo
-            </label>
+        <div className="w-full md:w-1/4">
+          <label htmlFor="max-price" className="block text-sm font-medium text-gray-700">
+            Preço Máximo
+          </label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              R$
+            </span>
             <input
               id="max-price"
               type="number"
-              placeholder="R$ 1.000,00"
+              placeholder="1000,00"
               min={0}
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 p-3 mt-1 focus:border-black focus:outline-none bg-blue-50"
+              className="w-full rounded-lg border border-gray-300 bg-white p-3 pl-10 shadow-sm"
             />
           </div>
         </div>

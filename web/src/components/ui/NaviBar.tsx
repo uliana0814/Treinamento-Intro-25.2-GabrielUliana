@@ -46,7 +46,7 @@ export default function NaviBar({ cartCount, totalPrice, onCartClick }: NaviBarP
           ) : (
             <Link href="/login" className="flex items-center gap-4 font-sans text-lg cursor-pointer">
               <CircleUserRound className="text-black h-8 w-8" />
-              <h4 className="hidden md:inline">Entrar / Cadastrar</h4>
+              <h4 className="hidden md:inline">Entrar</h4>
             </Link>
           )}
 
