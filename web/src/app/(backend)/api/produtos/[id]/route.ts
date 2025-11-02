@@ -8,7 +8,6 @@ type RouteParams = {
   };
 };
 
-// Buscar um produto pelo ID
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;
@@ -25,7 +24,6 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
-// Atualizar um produto pelo ID
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const { id } = params;

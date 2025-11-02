@@ -29,17 +29,38 @@ export const servicoProduto = {
     }
   },
 
-  async cadastrar(dados: DadosProduto) {
-    try {
-      const criado = await prisma.produto.create({
-        data: dados,
-      });
-      return criado;
-    } catch (erro) {
-      console.error("Problema ao criar novo produto:", erro);
-      throw new Error("Falha ao registrar o produto.");
-    }
-  },
+async cadastrar(dados: DadosProduto) {
+     try {
+        const { categoriaIds, ...produtoData } = dados;
+
+        const categorias = await prisma.categoria.findMany({
+          where: {
+            nome: { in: categoriaIds }
+          },
+          select: {
+            id: true,
+          }
+        });
+
+        const categoriaCreateData = categorias.map(categoria => {
+          return { categoriaId: categoria.id };
+        });
+
+        const criado = await prisma.produto.create({
+          data: {
+            ...produtoData,
+            categoria: { 
+              create: categoriaCreateData 
+            }
+          }
+        });
+
+        return criado;
+      } catch (erro) {
+        console.error("Problema ao criar novo produto:", erro);
+        throw new Error("Falha ao registrar o produto.");
+      }
+    },
 
   async editar(produtoId: string, atualizacoes: Partial<DadosProduto>) {
     try {
