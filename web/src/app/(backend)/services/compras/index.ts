@@ -3,11 +3,14 @@ import { Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-interface DadosNovaCompra {
-  
-  userId: string;
-  produtosIds: string[];
+interface CartItem {
+  product: {
+    id: string;
+    price: number;
+  };
+  quantity: number;
 }
+
 
 export const servicoCompra = {
 
@@ -31,18 +34,13 @@ export const servicoCompra = {
     }
   },
 
-  async registrarCompra(dados: DadosNovaCompra) {
-    const { userId, produtosIds } = dados;
+  async registrarCompra(cartItems: CartItem[], userId: string) {
+    
+    const valorTotal = cartItems.reduce((soma, item) => {
+      return soma + (item.product.price * item.quantity);
+    }, 0);
 
     try {
-      const produtosSelecionados = await prisma.produto.findMany({
-        where: {
-          id: { in: produtosIds },
-        },
-      });
-
-      const valorTotal = produtosSelecionados.reduce((soma, item) => soma + item.preco, 0);
-
       const novaCompraRegistrada = await prisma.$transaction(async (db) => {
         const compraCriada = await db.compra.create({
           data: {
@@ -51,12 +49,12 @@ export const servicoCompra = {
           },
         });
 
-        const itensDaCompra: Prisma.CompraProdutoCreateManyInput[] = produtosSelecionados.map((produto) => ({
-            compraId: compraCriada.id,
-            produtoId: produto.id,
-            precoUnitario: produto.preco,
-          }));
-
+        const itensDaCompra: Prisma.CompraProdutoCreateManyInput[] = cartItems.map((item) => ({
+          compraId: compraCriada.id,
+          produtoId: item.product.id,
+          precoUnitario: item.product.price,
+          quantidade: item.quantity, 
+        }));
 
         await db.compraProduto.createMany({
           data: itensDaCompra,

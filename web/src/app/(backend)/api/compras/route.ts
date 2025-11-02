@@ -1,94 +1,40 @@
-import prisma from "@/backend/services/db";
+import { NextResponse } from 'next/server';
+import { servicoCompra } from '@/backend/services/compras'; 
 
-/**
- * Cria uma nova compra para um usuário com base nos IDs dos produtos.
- * @param data - Dados contendo os IDs dos produtos.
- * @param userId - ID do usuário que está realizando a compra.
- */
-export async function criarCompra(data: { produtoIds: string[] }, userId: string) {
-  const { produtoIds } = data;
+type CartItem = {
+  product: {
+    id: string; 
+    price: number;
+  };
+  quantity: number;
+}
 
-  // Verifica se todos os produtos existem
-  const produtosEncontrados = await prisma.produtos.findMany({
-    where: {
-      id: {
-        in: produtoIds,
-      },
-    },
-  });
+export async function POST(request: Request) {
+  try {
+    const cartItems: CartItem[] = await request.json();
 
-  if (produtosEncontrados.length !== produtoIds.length) {
-    throw new Error("Um ou mais produtos não foram encontrados.");
+    
+    const userId = "USER_ID_DE_TESTE"; 
+
+    const novaCompra = await servicoCompra.registrarCompra(cartItems, userId);
+
+    return NextResponse.json(novaCompra, { status: 201 });
+
+  } catch (error) {
+    console.error("Erro ao criar compra:", error);
+    return NextResponse.json({ message: error.message || "Erro interno ao processar compra" }, { status: 500 });
   }
-
-  const precoTotal = produtosEncontrados.reduce(
-    (total, produto) => total + produto.preco,
-    0
-  );
-
-  // Criação da compra e associação com os produtos
-  const novaCompra = await prisma.compras.create({
-    data: {
-      userId,
-      precoTotal,
-      produtos: {
-        create: produtosEncontrados.map((produto) => ({
-          produto: {
-            connect: { id: produto.id },
-          },
-          precoUnitario: produto.preco,
-          quantidade: 1, // ou ajuste conforme necessário
-        })),
-      },
-    },
-  });
-
-  return novaCompra;
 }
 
-/**
- * Busca todas as compras feitas por um usuário específico.
- * @param userId - ID do usuário.
- */
-export async function buscarComprasPorUsuario(userId: string) {
-  return await prisma.compras.findMany({
-    where: { userId },
-    include: {
-      produtos: {
-        include: {
-          produto: true,
-        },
-      },
-    },
-  });
-}
+export async function GET(request: Request) {
+  try {
+    const userId = "USER_ID_DE_TESTE"; 
 
-/**
- * Busca uma compra específica pelo ID.
- * @param id - ID da compra.
- */
-export async function buscarCompraPorId(id: string) {
-  return await prisma.compras.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true },
-      },
-      produtos: {
-        include: {
-          produto: true,
-        },
-      },
-    },
-  });
-}
+    const compras = await servicoCompra.listarPorUsuario(userId);
+    return NextResponse.json(compras, { status: 200 });
 
-/**
- * Remove uma compra do banco de dados.
- * @param id - ID da compra.
- */
-export async function removerCompra(id: string) {
-  return await prisma.compras.delete({
-    where: { id },
-  });
+  } catch (error) {
+    console.error("Erro ao buscar compras:", error);
+    return NextResponse.json({ message: error.message || "Erro interno" }, { status: 500 });
+  }
 }

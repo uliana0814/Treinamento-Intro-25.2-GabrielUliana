@@ -15,7 +15,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Validação simples manual
     if (!body || typeof body.nome !== 'string' || body.nome.trim() === '') {
       return NextResponse.json({ message: 'Nome inválido ou ausente.' }, { status: 400 });
     }
