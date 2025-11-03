@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    createProdutoSchema.parse(body);  // mantém a validação com zod, ok
+    createProdutoSchema.parse(body); 
 
     const novoProduto = await servicoProduto.cadastrar(body);
     return NextResponse.json(novoProduto, { status: 201 });

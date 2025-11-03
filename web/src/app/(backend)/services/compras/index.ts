@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 interface CartItem {
   product: {
     id: string;
-    price: number;
+    preco: number;
   };
   quantity: number;
 }
@@ -37,7 +37,7 @@ export const servicoCompra = {
   async registrarCompra(cartItems: CartItem[], userId: string) {
     
     const valorTotal = cartItems.reduce((soma, item) => {
-      return soma + (item.product.price * item.quantity);
+      return soma + (item.product.preco * item.quantity);
     }, 0);
 
     try {
@@ -52,7 +52,7 @@ export const servicoCompra = {
         const itensDaCompra: Prisma.CompraProdutoCreateManyInput[] = cartItems.map((item) => ({
           compraId: compraCriada.id,
           produtoId: item.product.id,
-          precoUnitario: item.product.price,
+          precoUnitario: item.product.preco,
           quantidade: item.quantity, 
         }));
 

@@ -9,7 +9,15 @@ export const servicoProduto = {
 
   async listarTodos() {
     try {
-      const lista = await prisma.produto.findMany();
+      const lista = await prisma.produto.findMany({
+        include: {
+          categoria: { 
+            include: {
+              categoria: true 
+            }
+          }
+        }
+      });
       return lista;
     } catch (erro) {
       console.error("Falha ao listar os produtos:", erro);
@@ -21,6 +29,13 @@ export const servicoProduto = {
     try {
       const resultado = await prisma.produto.findUnique({
         where: { id: produtoId },
+        include: {
+          categoria: {
+            include: {
+              categoria: true
+            }
+          }
+        }
       });
       return resultado;
     } catch (erro) {
@@ -29,38 +44,38 @@ export const servicoProduto = {
     }
   },
 
-async cadastrar(dados: DadosProduto) {
-     try {
-        const { categoriaIds, ...produtoData } = dados;
+  async cadastrar(dados: DadosProduto) {
+    try {
+      const { categoriaIds, ...produtoData } = dados;
 
-        const categorias = await prisma.categoria.findMany({
-          where: {
-            nome: { in: categoriaIds }
-          },
-          select: {
-            id: true,
+      const categorias = await prisma.categoria.findMany({
+        where: {
+          nome: { in: categoriaIds }
+        },
+        select: {
+          id: true,
+        }
+      });
+
+      const categoriaCreateData = categorias.map(categoria => {
+        return { categoriaId: categoria.id };
+      });
+
+      const criado = await prisma.produto.create({
+        data: {
+          ...produtoData,
+          categoria: { 
+            create: categoriaCreateData 
           }
-        });
+        }
+      });
 
-        const categoriaCreateData = categorias.map(categoria => {
-          return { categoriaId: categoria.id };
-        });
-
-        const criado = await prisma.produto.create({
-          data: {
-            ...produtoData,
-            categoria: { 
-              create: categoriaCreateData 
-            }
-          }
-        });
-
-        return criado;
-      } catch (erro) {
-        console.error("Problema ao criar novo produto:", erro);
-        throw new Error("Falha ao registrar o produto.");
-      }
-    },
+      return criado;
+    } catch (erro) {
+      console.error("Problema ao criar novo produto:", erro);
+      throw new Error("Falha ao registrar o produto.");
+    }
+  },
 
   async editar(produtoId: string, atualizacoes: Partial<DadosProduto>) {
     try {

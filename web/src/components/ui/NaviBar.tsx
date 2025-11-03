@@ -1,24 +1,21 @@
 'use client'; 
+
 import { ShoppingCart, CircleUserRound } from "lucide-react";
-import { useState, useEffect } from "react"; 
 import Link from "next/link"; 
 
 interface NaviBarProps {
   cartCount: number;
   totalPrice: number;
   onCartClick: () => void;
+  userName: string | null; 
 }
 
-export default function NaviBar({ cartCount, totalPrice, onCartClick }: NaviBarProps) {
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('loggedInUser');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setUserName(user.name);
-    }
-  }, []); 
+export default function NaviBar({ 
+  cartCount, 
+  totalPrice, 
+  onCartClick, 
+  userName
+}: NaviBarProps) {
 
   return (
     <header>
@@ -33,6 +30,7 @@ export default function NaviBar({ cartCount, totalPrice, onCartClick }: NaviBarP
             027 STORE!
           </h1>
         </div>
+
         <div className="flex items-center gap-4 lg:gap-10">
 
           {userName ? (
@@ -46,7 +44,7 @@ export default function NaviBar({ cartCount, totalPrice, onCartClick }: NaviBarP
           ) : (
             <Link href="/login" className="flex items-center gap-4 font-sans text-lg cursor-pointer">
               <CircleUserRound className="text-black h-8 w-8" />
-              <h4 className="hidden md:inline">Entrar</h4>
+              <h4 className="hidden md:inline">Entrar / Cadastrar</h4>
             </Link>
           )}
 
